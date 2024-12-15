@@ -1,8 +1,8 @@
-TOP = top
-MAIN = top.topMain
+TOP = MyModule
+MAIN = MyModule.MyModule
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/OBJ_DIR
-TOPNAME = top
+TOPNAME = MyModule
 TOP_V = $(BUILD_DIR)/verilog/$(TOPNAME).v
 
 SCALA_FILE = $(shell find ./src/main -name '*.scala')
@@ -18,7 +18,7 @@ VERILATOR_FLAGS += --timescale 1us/1us
 
 verilog: $(SCALA_FILE)
 	@mkdir -p $(BUILD_DIR)/verilog
-	mill -i $(TOP).runMain $(MAIN) -td $(BUILD_DIR)/verilog --emit-modules verilog
+	./mill -i $(TOP).runMain $(MAIN) -td $(BUILD_DIR)/verilog
 
 vcd ?= 
 ifeq ($(vcd), 1)
@@ -32,17 +32,22 @@ CFLAGS += $(INCFLAGS) $(CFLAGS_SIM) -DTOP_NAME="V$(TOPNAME)"
 
 # source file
 CSRCS = $(shell find $(abspath ./sim_c) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
+VSRCS = $(shell find $(abspath ./vsrc) -name "*.v" -or -name "*.sv")
+VSRCS += $(shell find $(abspath $(BUILD_DIR)/verilog) -name "*.v" -or -name "*.sv")
+
+ 
+
 
 BIN = $(BUILD_DIR)/$(TOP)
 NPC_EXEC := $(BIN)
 
 sim: $(CSRCS) verilog
 	@rm -rf $(OBJ_DIR)
-	$(VERILATOR) $(VERILATOR_FLAGS) -top $(TOPNAME) $(CSRCS) $(wildcard $(BUILD_DIR)/verilog/*.v) \
+	$(VERILATOR) $(VERILATOR_FLAGS) -top $(TOPNAME) $(CSRCS) $(VSRCS) \
 		$(addprefix -CFLAGS , $(CFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \
 		--Mdir $(OBJ_DIR) -o $(abspath $(BIN))
 
-run:
+run:sim
 	@echo
 	@echo "------------ RUN --------------"
 	$(NPC_EXEC)
