@@ -1,7 +1,15 @@
-# chisel-template
+# chisel-CLA 
+
+Carry-Lookahead Adder Written in Chisel 
 
 
-基于：[https://github.com/light-ly/chisel-template](https://github.com/light-ly/chisel-template)
+## Test
+```
+make test
+```
 
-
+## Gen Verilog
+```
+make verilog
+```
 

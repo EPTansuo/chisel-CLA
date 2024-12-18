@@ -1,70 +1,26 @@
-TOP = MyModule
-MAIN = MyModule.MyModule
+TOP = CLA
+MAIN = CLA.CLA
 BUILD_DIR = ./build
-OBJ_DIR = $(BUILD_DIR)/OBJ_DIR
-TOPNAME = MyModule
+TOPNAME = CLA
 TOP_V = $(BUILD_DIR)/verilog/$(TOPNAME).v
 
-SCALA_FILE = $(shell find ./src/main -name '*.scala')
+SCALA_FILE = $(shell find ./src -name '*.scala')
 
-VERILATOR = verilator
-VERILATOR_COVERAGE = verilator_coverage
-# verilator flags
-VERILATOR_FLAGS += -Wall -MMD --trace --build -cc --exe \
-									 -O3 --x-assign fast --x-initial fast --noassert -report-unoptflat
-
-# timescale set
-VERILATOR_FLAGS += --timescale 1us/1us
 
 verilog: $(SCALA_FILE)
 	@mkdir -p $(BUILD_DIR)/verilog
 	./mill -i $(TOP).runMain $(MAIN) -td $(BUILD_DIR)/verilog
 
-vcd ?= 
-ifeq ($(vcd), 1)
-	CFLAGS += -DVCD
-endif
+test: $(SCALA_FILE)
+	./mill -i $(TOP).test
 
-# C flags
-INC_PATH += $(abspath ./sim_c/include)
-INCFLAGS = $(addprefix -I, $(INC_PATH))
-CFLAGS += $(INCFLAGS) $(CFLAGS_SIM) -DTOP_NAME="V$(TOPNAME)"
-
-# source file
-CSRCS = $(shell find $(abspath ./sim_c) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
-VSRCS = $(shell find $(abspath ./vsrc) -name "*.v" -or -name "*.sv")
-VSRCS += $(shell find $(abspath $(BUILD_DIR)/verilog) -name "*.v" -or -name "*.sv")
-
- 
-
-
-BIN = $(BUILD_DIR)/$(TOP)
-NPC_EXEC := $(BIN)
-
-sim: $(CSRCS) verilog
-	@rm -rf $(OBJ_DIR)
-	$(VERILATOR) $(VERILATOR_FLAGS) -top $(TOPNAME) $(CSRCS) $(VSRCS) \
-		$(addprefix -CFLAGS , $(CFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \
-		--Mdir $(OBJ_DIR) -o $(abspath $(BIN))
-
-run:sim
-	@echo
-	@echo "------------ RUN --------------"
-	$(NPC_EXEC)
-ifeq ($(vcd), 1)
-	@echo "----- see vcd file in logs dir ----"
-else
-	@echo "----- if you need vcd file. add vcd=1 to make ----"
-endif
-	
-srun: sim run
 
 clean:
 	-rm -rf $(BUILD_DIR) logs
 
 clean_mill:
-	-rm -rf out
+	-rm -rf out target  test_run_dir project
 
 clean_all: clean clean_mill
 
-.PHONY: clean clean_all clean_mill srun run sim verilog
+.PHONY: clean clean_all clean_mill verilog
