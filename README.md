@@ -8,6 +8,11 @@ Carry-Lookahead Adder Written in Chisel
 make test
 ```
 
+## Formal Verification
+```
+make formal
+```
+
 ## Gen Verilog
 ```
 make verilog

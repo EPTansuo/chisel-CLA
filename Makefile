@@ -12,8 +12,9 @@ verilog: $(SCALA_FILE)
 	./mill -i $(TOP).runMain $(MAIN) -td $(BUILD_DIR)/verilog
 
 test: $(SCALA_FILE)
-	./mill -i $(TOP).test
-
+	./mill -i $(TOP).test.testOnly $(TOP).CLATest
+formal: $(SCALA_FILE)
+	./mill -i $(TOP).test.testOnly $(TOP).CLAFormalTest
 
 clean:
 	-rm -rf $(BUILD_DIR) logs
